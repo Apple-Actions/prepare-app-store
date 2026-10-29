@@ -1,0 +1,70 @@
+name: test
+
+run-name: test
+
+on:
+  push:
+    branches:
+      - "**"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Enable corepack (workaround)
+        run: corepack enable
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: test
+        run: yarn test
+
+  validate-inputs:
+    name: validate-inputs
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+
+      - name: Reject a missing private key PEM
+        run: |
+          set +e
+          output=$(env \
+            'INPUT_ISSUER-ID=issuer' \
+            'INPUT_API-KEY-ID=key' \
+            'INPUT_API-PRIVATE-KEY=not-a-pem' \
+            'INPUT_SUBMIT=false' \
+            'INPUT_LOCALE=en-US' \
+            'INPUT_VERSION-FILE=Config/Shared.xcconfig' \
+            node dist/index.js)
+          code=$?
+          set -e
+          echo "${output//::/: :}"
+          test "$code" -ne 0 || { echo "::error::Expected a non-zero exit code"; exit 1; }
+          echo "$output" | grep -qF '::error::api-private-key is empty or not a PEM private key' \
+            || { echo "::error::Expected a PEM validation failure message"; exit 1; }

@@ -1,0 +1,62 @@
+name: 'Prepare App Store'
+description: 'Prepare an App Store Connect version from a TestFlight build and release notes.'
+author: 'Apple Github Actions (iOS & macOS)'
+inputs:
+  issuer-id:
+    description: 'App Store Connect API Key Issuer Identifier.'
+    required: true
+  api-key-id:
+    description: 'App Store Connect API Key ID.'
+    required: true
+  api-private-key:
+    description: 'App Store Connect API private key (PKCS8 PEM).'
+    required: true
+  version-file:
+    description: 'Path to an xcconfig (or similar) file containing MARKETING_VERSION and PRODUCT_BUNDLE_IDENTIFIER.'
+    required: false
+    default: 'Config/Shared.xcconfig'
+  version:
+    description: 'App Store version string. Wins over version-file when set.'
+    required: false
+  bundle-id:
+    description: 'Bundle identifier. Wins over version-file when set.'
+    required: false
+  platform:
+    description: 'App Store Connect platform (IOS, MAC_OS, TV_OS, VISION_OS). Wins over platform-file when set.'
+    required: false
+  platform-file:
+    description: 'Optional file whose first non-comment line is the platform (for example bin/asc_platform).'
+    required: false
+  release-notes-dir:
+    description: 'Directory of *.md files used for What''s New. Defaults to release-notes/<version>.'
+    required: false
+  source-ref:
+    description: 'Optional git ref to read version-file / release notes from (for example origin/prod).'
+    required: false
+  locale:
+    description: 'App Store localization locale for What''s New.'
+    required: false
+    default: 'en-US'
+  submit:
+    description: 'Also submit the version for App Store review.'
+    required: false
+    default: 'false'
+outputs:
+  version:
+    description: 'Resolved marketing / App Store version string.'
+  bundle-id:
+    description: 'Resolved bundle identifier.'
+  build-number:
+    description: 'CFBundleVersion of the attached TestFlight build.'
+  app-id:
+    description: 'App Store Connect app id.'
+  app-store-version-id:
+    description: 'App Store Connect appStoreVersions id.'
+  store-url:
+    description: 'App Store Connect URL for the app.'
+runs:
+  using: 'node24'
+  main: 'dist/index.js'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
