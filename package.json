@@ -1,6 +1,6 @@
 {
   "name": "prepare-app-store-action",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "GitHub Action to prepare an App Store Connect version from a TestFlight build and release notes.",
   "type": "module",
   "main": "src/main.ts",
