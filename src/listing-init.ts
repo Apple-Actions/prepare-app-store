@@ -177,13 +177,11 @@ async function promptForMissingListing({
         ? 'custom'
         : 'none'
   const ageAnswer = await promptLine(
-    'ageRating (none = utility preset)',
-    ageDefault === 'custom' ? 'none' : ageDefault
+    'ageRating (none = utility preset; custom = keep pulled map)',
+    ageDefault
   )
-  if (!ageAnswer || ageAnswer === 'none') {
-    out.ageRating = 'none'
-  } else if (ageAnswer === 'custom' && typeof out.ageRating === 'object') {
-    // keep pulled map
+  if (ageAnswer === 'custom' && typeof out.ageRating === 'object') {
+    // keep pulled attribute map
   } else {
     out.ageRating = 'none'
   }

@@ -20620,12 +20620,10 @@ async function promptForMissingListing({
   await ask("category", "category ASC id (optional, e.g. UTILITIES)", false);
   const ageDefault = out.ageRating === "none" ? "none" : out.ageRating && typeof out.ageRating === "object" ? "custom" : "none";
   const ageAnswer = await promptLine(
-    "ageRating (none = utility preset)",
-    ageDefault === "custom" ? "none" : ageDefault
+    "ageRating (none = utility preset; custom = keep pulled map)",
+    ageDefault
   );
-  if (!ageAnswer || ageAnswer === "none") {
-    out.ageRating = "none";
-  } else if (ageAnswer === "custom" && typeof out.ageRating === "object") {
+  if (ageAnswer === "custom" && typeof out.ageRating === "object") {
   } else {
     out.ageRating = "none";
   }
@@ -21281,7 +21279,8 @@ function log(msg) {
   process.stdout.write(`${msg}
 `);
 }
-async function ensureEditableVersion(client, appId, version, platform2) {
+var DRY_RUN_ID = "(dry-run)";
+async function ensureEditableVersion(client, appId, version, platform2, dryRun) {
   const existingResponse = await client.request(
     "GET",
     `/v1/apps/${appId}/appStoreVersions`,
@@ -21303,6 +21302,15 @@ async function ensureEditableVersion(client, appId, version, platform2) {
     }
     return versionObj;
   }
+  if (dryRun) {
+    log(
+      `dry-run: would POST appStoreVersions platform=${platform2} versionString=${version}`
+    );
+    return {
+      id: DRY_RUN_ID,
+      attributes: { appVersionState: "PREPARE_FOR_SUBMISSION" }
+    };
+  }
   const created = await client.request("POST", "/v1/appStoreVersions", {
     body: {
       data: {
@@ -21317,7 +21325,11 @@ async function ensureEditableVersion(client, appId, version, platform2) {
   );
   return created.data;
 }
-async function ensureVersionLocalization(client, versionId, locale) {
+async function ensureVersionLocalization(client, versionId, locale, dryRun) {
+  if (versionId === DRY_RUN_ID) {
+    log(`dry-run: would ensure ${locale} appStoreVersionLocalization`);
+    return { id: DRY_RUN_ID, attributes: { locale } };
+  }
   const locsResponse = await client.request(
     "GET",
     `/v1/appStoreVersions/${versionId}/appStoreVersionLocalizations`
@@ -21326,6 +21338,10 @@ async function ensureVersionLocalization(client, versionId, locale) {
   const existing = locs.find((loc) => loc.attributes.locale === locale);
   if (existing) {
     return existing;
+  }
+  if (dryRun) {
+    log(`dry-run: would POST appStoreVersionLocalizations locale=${locale}`);
+    return { id: DRY_RUN_ID, attributes: { locale } };
   }
   const created = await client.request(
     "POST",
@@ -21742,10 +21758,16 @@ async function setupAppStoreListing({
     client,
     app.id,
     version,
-    platform2
+    platform2,
+    dryRun
   );
   log(`Version: ${version} (${versionObj.id})`);
-  const loc = await ensureVersionLocalization(client, versionObj.id, locale);
+  const loc = await ensureVersionLocalization(
+    client,
+    versionObj.id,
+    locale,
+    dryRun
+  );
   await applyVersionLocalization(client, loc, listing, dryRun);
   await applyCopyright(client, versionObj.id, listing.copyright, dryRun);
   await applyReviewDetails(client, versionObj.id, listing.review, dryRun);

@@ -1,3 +1,4 @@
+// audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
 import {describe, expect, it} from 'vitest'
 import {writeFileSync, mkdtempSync} from 'node:fs'
 import {tmpdir} from 'node:os'
@@ -10,6 +11,7 @@ import {assertMacScreenshotSize, readImageSize} from '../src/image-size'
 import {parseListingYaml, resolveListing} from '../src/listing-file'
 
 describe('age rating preset', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('expands none to NONE strings and false booleans', () => {
     const attrs = noneAgeRatingAttributes()
     expect(attrs.alcoholTobaccoOrDrugUseOrReferences).toBe('NONE')
@@ -19,6 +21,7 @@ describe('age rating preset', () => {
     expect(attrs.ageRatingOverrideV2).toBe('NONE')
   })
 
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('passes through explicit attribute maps', () => {
     expect(resolveAgeRatingAttributes({gambling: true})).toEqual({
       gambling: true
@@ -27,6 +30,7 @@ describe('age rating preset', () => {
 })
 
 describe('parseListingYaml', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('parses the documented listing shape', () => {
     const listing = parseListingYaml(`
 description: |
@@ -58,6 +62,7 @@ review:
 })
 
 describe('resolveListing', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('lets review CLI inputs win over the listing file', () => {
     const resolved = resolveListing(
       {
@@ -78,6 +83,7 @@ describe('resolveListing', () => {
 })
 
 describe('image size', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('reads PNG dimensions and rejects non-Mac sizes', () => {
     // 1x1 PNG
     const png = Buffer.from(

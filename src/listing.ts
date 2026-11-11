@@ -31,11 +31,14 @@ function log(msg: string): void {
   process.stdout.write(`${msg}\n`)
 }
 
+const DRY_RUN_ID = '(dry-run)'
+
 async function ensureEditableVersion(
   client: AscClient,
   appId: string,
   version: string,
-  platform: string
+  platform: string,
+  dryRun: boolean
 ): Promise<AscVersion> {
   const existingResponse = (await client.request(
     'GET',
@@ -59,6 +62,16 @@ async function ensureEditableVersion(
     return versionObj
   }
 
+  if (dryRun) {
+    log(
+      `dry-run: would POST appStoreVersions platform=${platform} versionString=${version}`
+    )
+    return {
+      id: DRY_RUN_ID,
+      attributes: {appVersionState: 'PREPARE_FOR_SUBMISSION'}
+    }
+  }
+
   const created = (await client.request('POST', '/v1/appStoreVersions', {
     body: {
       data: {
@@ -77,8 +90,14 @@ async function ensureEditableVersion(
 async function ensureVersionLocalization(
   client: AscClient,
   versionId: string,
-  locale: string
+  locale: string,
+  dryRun: boolean
 ): Promise<LocResource> {
+  if (versionId === DRY_RUN_ID) {
+    log(`dry-run: would ensure ${locale} appStoreVersionLocalization`)
+    return {id: DRY_RUN_ID, attributes: {locale}}
+  }
+
   const locsResponse = (await client.request(
     'GET',
     `/v1/appStoreVersions/${versionId}/appStoreVersionLocalizations`
@@ -87,6 +106,10 @@ async function ensureVersionLocalization(
   const existing = locs.find(loc => loc.attributes.locale === locale)
   if (existing) {
     return existing
+  }
+  if (dryRun) {
+    log(`dry-run: would POST appStoreVersionLocalizations locale=${locale}`)
+    return {id: DRY_RUN_ID, attributes: {locale}}
   }
   const created = (await client.request(
     'POST',
@@ -621,11 +644,17 @@ export async function setupAppStoreListing({
     client,
     app.id,
     version,
-    platform
+    platform,
+    dryRun
   )
   log(`Version: ${version} (${versionObj.id})`)
 
-  const loc = await ensureVersionLocalization(client, versionObj.id, locale)
+  const loc = await ensureVersionLocalization(
+    client,
+    versionObj.id,
+    locale,
+    dryRun
+  )
   await applyVersionLocalization(client, loc, listing, dryRun)
   await applyCopyright(client, versionObj.id, listing.copyright, dryRun)
   await applyReviewDetails(client, versionObj.id, listing.review, dryRun)

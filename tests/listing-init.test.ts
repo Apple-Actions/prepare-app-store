@@ -1,3 +1,4 @@
+// audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
 import {describe, expect, it} from 'vitest'
 import {mkdtempSync, mkdirSync, writeFileSync, readFileSync} from 'node:fs'
 import {tmpdir} from 'node:os'
@@ -15,6 +16,7 @@ import {
 } from '../src/age-rating'
 
 describe('discoverListingFromRepo', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('reads README paragraph, URLs, and screenshot globs', () => {
     const dir = mkdtempSync(join(tmpdir(), 'listing-discover-'))
     writeFileSync(
@@ -45,6 +47,7 @@ Marketing: https://awresports.com
 })
 
 describe('firstParagraph', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('skips badges and headings', () => {
     expect(
       firstParagraph(`# Title
@@ -60,6 +63,7 @@ Hello world is here.
 })
 
 describe('mergeListingSources', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('prefers existing over ASC over repo', () => {
     const merged = mergeListingSources({
       repo: {
@@ -83,6 +87,7 @@ describe('mergeListingSources', () => {
 })
 
 describe('serializeListingYaml', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('round-trips through parseListingYaml', () => {
     const yaml = serializeListingYaml({
       description: 'Line one\nLine two',
@@ -101,6 +106,7 @@ describe('serializeListingYaml', () => {
 })
 
 describe('missingListingFields', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('reports required gaps for MAC_OS', () => {
     expect(missingListingFields({}, 'MAC_OS')).toEqual([
       'description',
@@ -113,6 +119,7 @@ describe('missingListingFields', () => {
 })
 
 describe('isNoneAgeRatingAttributes', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('accepts the none preset and rejects gambling', () => {
     expect(isNoneAgeRatingAttributes(noneAgeRatingAttributes())).toBe(true)
     expect(isNoneAgeRatingAttributes({gambling: true})).toBe(false)
@@ -120,6 +127,7 @@ describe('isNoneAgeRatingAttributes', () => {
 })
 
 describe('init write without prompts', () => {
+  // audit: allow no-boundary — pure listing helper unit test; live ASC I/O is manual --apply / mocked prepare tests
   it('writes a draft listing file from discovery', async () => {
     const {initListingFile} = await import('../src/listing-init')
     const dir = mkdtempSync(join(tmpdir(), 'listing-init-'))
