@@ -55,3 +55,30 @@ By default the action reads `MARKETING_VERSION` and `PRODUCT_BUNDLE_IDENTIFIER` 
 | `app-id` | ASC app id |
 | `app-store-version-id` | ASC appStoreVersions id |
 | `store-url` | App Store Connect URL |
+
+## Before first submit: listing script
+
+This Action only attaches a build and sets What's New. For a first App Store version you also need listing metadata (age rating, App Review contact, description / URLs, screenshots). Use the local script in this repo — it is **not** wired into the Action, so every prepare run does not re-upload screenshots.
+
+```bash
+yarn build   # once, in a checkout of this repo
+
+# 1) Bootstrap store/listing.yml (repo discover + optional ASC pull + prompts)
+./scripts/setup-app-store-listing.sh --init --dir /path/to/your/app
+# Optional: also pull fields already in App Store Connect
+./scripts/setup-app-store-listing.sh --init --dir /path/to/your/app \
+  --issuer-id '…' --api-key-id '…' --api-private-key-path ~/AuthKey_….p8
+
+# 2) Dry-run, then apply (review contact stays on the CLI — not in listing.yml)
+./scripts/setup-app-store-listing.sh --dir /path/to/your/app
+./scripts/setup-app-store-listing.sh --dir /path/to/your/app --apply \
+  --issuer-id '…' --api-key-id '…' --api-private-key-path ~/AuthKey_….p8 \
+  --review-first-name Jane --review-last-name Doe \
+  --review-phone '+1-555-0100' --review-email review@example.com
+```
+
+`--init` merges (highest wins): existing `store/listing.yml`, ASC pull (when credentials are passed), then repo heuristics (README URLs / first paragraph, `store/screenshots/{mac,ios}/*`). On a TTY it prompts only for gaps. Without a TTY it writes a discovery draft and exits `2` if required fields are still missing.
+
+Default listing file: `store/listing.yml` (see [`examples/store/listing.yml`](examples/store/listing.yml)). Mac screenshots must be one of `1280x800`, `1440x900`, `2560x1600`, `2880x1800`.
+
+**Still manual:** App Privacy nutrition labels in App Store Connect (Admin). First-version What's New stays this Action's job after a VALID TestFlight build exists.
