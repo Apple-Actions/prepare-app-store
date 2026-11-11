@@ -1,0 +1,20 @@
+# Example App Store listing file for scripts/setup-app-store-listing.sh.
+# Prefer: ./scripts/setup-app-store-listing.sh --init --dir /path/to/app
+# Keep App Review phone/email out of git — pass --review-* flags on --apply.
+
+description: |
+  Short App Store description for your app.
+keywords: example,utility
+supportUrl: https://example.com/support
+privacyPolicyUrl: https://example.com/privacy
+marketingUrl: https://example.com
+copyright: 2026 Example Inc
+category: UTILITIES
+
+# Expands to all content fields NONE / false. Or replace with a full attribute map.
+ageRating: none
+
+screenshots:
+  mac:
+    - store/screenshots/mac/01.png
+    # Exact Mac sizes only: 1280x800, 1440x900, 2560x1600, 2880x1800 (JPEG/PNG)
